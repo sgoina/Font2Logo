@@ -1,8 +1,5 @@
 # Font2Logo
-
-## 前置動作
-
-## Requies additional files to work
+## 前置動作 Requies additional files to work
 
 1. add as Font2Logo/Attr2Font/experiments
    https://drive.google.com/drive/folders/1M5Y170gyySNu6zZmNNdqNJG0JF_D2UBJ?usp=sharing
