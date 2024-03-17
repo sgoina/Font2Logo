@@ -10,7 +10,9 @@
 6. Download [Log generator rar file](https://drive.google.com/file/d/1u79bqUv-yCoXHLFSe2vt_oRu5RS2-hxd/view?usp=sharing) and put the `dataset` and `experiments` folder in the `Logo_generator` folder
 7. You'll need node 
 ## Execution
-1. install the python requirements with `pip install -r requirments.txt`
-2. run app.py for `Logo_generator` and `Attr2font`
-3. npm install in `Vueinterface`
-4. npm run dev in `Vueinterface` 
+- install the python requirements with `pip install -r requirments.txt`
+- run app.py for `Logo_generator` and `Attr2font`
+- npm install in `Vueinterface`
+- npm run dev in `Vueinterface` 
+## References
+- hologerry [Attr2font](https://github.com/hologerry/Attr2Font)
