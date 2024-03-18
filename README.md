@@ -14,3 +14,5 @@
 - npm run dev in `Vueinterface` 
 ## References
 - hologerry [Attr2font](https://github.com/hologerry/Attr2Font)
+- EndyWon [Texture-Reformer](https://github.com/EndyWon/Texture-Reformer)
+- yizhiwang096 [TextLogoLayout](https://github.com/yizhiwang96/TextLogoLayout)
