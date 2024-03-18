@@ -271,22 +271,43 @@ async function getimages() {
     const res = await fetch_api_logo(`output00${i}.png`);
     images.value.push(res);
   }
-  // imageUrl1.value = await fetch_api_logo("output000.png");
+  return true;
 }
 const handleUpdate = async (value: Array<GLfloat>) => {
-  const res = change_attr(imageBattr.value, value);
   loading.value = true;
   progress.value = 0;
 
-  run_test();
+  const res = await change_attr(imageBattr.value, value);
+  console.log(res);
+  if(res.status !== 200){
+    loading.value = false;
+    return; // Exit if the status is not 200
+  }
+
+  const res1 = await run_test();
+  if(res1.status !== 200){
+    loading.value = false;
+    return; // Exit if the status is not 200
+  }
   progress.value = 25;
-  await runLogo(wordInput.value);
+
+  const res2 = await runLogo(wordInput.value);
+  if(res2.status !== 200){
+    loading.value = false;
+    return; // Exit if the status is not 200
+  }
   progress.value = 70;
+
   images.value = [];
-  getimages();
-  progress.value = 100;
+  const res3 = await getimages();
+  if(res3 !== true){
+    loading.value = false;
+    return; // Exit if the status is not 200
+  }
+  progress.value = 100
+
   loading.value = false;
-};
+};                           
 </script>
 <style>
 .select {
