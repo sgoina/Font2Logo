@@ -1,6 +1,6 @@
 # Font2Logo
 ## Requirements
-- conda env
+- conda env (python 3.8 above)
 - node 
 ## Additional files to Download
 
@@ -11,7 +11,7 @@
 6. Download [Log generator rar file](https://drive.google.com/file/d/1u79bqUv-yCoXHLFSe2vt_oRu5RS2-hxd/view?usp=sharing) and put the `dataset` and `experiments` folder in the `Logo_generator` folder
 
 ## Execution
-- install the python requirements with `pip install -r requirments.txt`
+- install the python requirements with `pip install -r requirements.txt`
 - run app.py for `Logo_generator` and `Attr2font`
 - npm install in `Vueinterface`
 - npm run dev in `Vueinterface` 
