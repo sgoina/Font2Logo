@@ -1,11 +1,14 @@
 from PIL import Image
+from PIL import ImageOps
 from PIL import ImageDraw
 from PIL import ImageFont
+import shutil
 import argparse
 import numpy as np
 import os
 import time
-import jieba
+from PIL import Image
+import cv2 as cv
 
 def crop_img(img):
     img = np.array(img)
@@ -40,8 +43,22 @@ def gen_glyph_imgs(opts, cid):
     img_ele = np.ndarray((opts.glyph_size, opts.glyph_size * opts.max_seqlen), np.uint8)
     img_ele[:, :] = 0
     img_ele = Image.fromarray(img_ele)
+    word_ele = np.ndarray((opts.glyph_size, opts.glyph_size * opts.max_seqlen), np.uint8)
+    word_ele[:, :] = 0
+    word_ele = Image.fromarray(word_ele)
+    space_num = 0
+    pos = 0
     for idx in range(0, len(opts.input_text)):
         char = opts.input_text[idx]
+        if (char == ' '):
+            word_ele = word_ele.crop((0, 0, pos * opts.glyph_size, opts.glyph_size))
+            word_ele.save(os.path.join(opts.glyph_output_dir, opts.split, cid, 'words' + "%d"%space_num + '.png'))
+            word_ele = np.ndarray((opts.glyph_size, opts.glyph_size * opts.max_seqlen), np.uint8)
+            word_ele[:, :] = 0
+            word_ele = Image.fromarray(word_ele)
+            pos = 0
+            space_num += 1   
+            continue
         # array = np.ndarray((opts.canvas_size, opts.canvas_size), np.uint8)
         # array[:, :] = 0
         word_index = word_dict[char]
@@ -50,8 +67,34 @@ def gen_glyph_imgs(opts, cid):
         # draw.text((opts.starting_pos, opts.starting_pos), char, (255), font=font)
         # img_char = crop_img(img_char)
         # img_char = img_char.resize((opts.glyph_size, opts.glyph_size), Image.ANTIALIAS)
-        img_ele.paste(img_char, (idx * opts.glyph_size, 0))
-        img_ele.save(os.path.join(opts.glyph_output_dir, opts.split, cid, 'elements.png'))
+        img_char = img_char.resize((opts.glyph_size, opts.glyph_size))
+        img_char = ImageOps.invert(img_char)
+        word_ele.paste(img_char, (pos * opts.glyph_size, 0))
+        pos += 1
+    word_ele = word_ele.crop((0, 0, pos * opts.glyph_size, opts.glyph_size))
+    word_ele.save(os.path.join(opts.glyph_output_dir, opts.split, cid, 'words' + "%d"%space_num + '.png'))
+    np.save(os.path.join(opts.glyph_output_dir, opts.split, cid, 'len.npy'), np.array([space_num + 1]))
+    # Get a list of all the png images in the directory
+    image_files = [f for f in os.listdir(os.path.join(opts.glyph_output_dir, opts.split, cid)) if f.endswith('.png')]
+
+    # Open all the images
+    images = [Image.open(os.path.join(opts.glyph_output_dir, opts.split, cid, f)) for f in image_files]
+
+    # Paste each image into the combined image
+    for idx, img in enumerate(images):
+        tmp = img.resize((opts.glyph_size, opts.glyph_size))
+        img_ele.paste(tmp, (idx * opts.glyph_size, 0))
+
+    # Save the combined image
+    img_ele.save(os.path.join(opts.glyph_output_dir, opts.split, cid, 'elements.png'))
+    # img = cv.imread(os.path.join(opts.glyph_output_dir, opts.split, cid, 'elements.png'))
+    # gray = cv.cvtColor(img,cv.COLOR_BGR2GRAY)
+    # ret, thresh = cv.threshold(gray,0,255,cv.THRESH_BINARY_INV+cv.THRESH_OTSU)
+    # thresh = 255 - thresh
+    # cv.imwrite(os.path.join(opts.glyph_output_dir, opts.split, cid, 'elements.png'), thresh)
+
+    
+        
 
 def gen_emebds(opts, cid):
     print('Step 2: generate char/word embeddings ...')
@@ -81,13 +124,12 @@ def gen_emebds(opts, cid):
             embed_char_res[cur_idx] = embed_char
             cur_idx += 1
     np.save(os.path.join(opts.glyph_output_dir, opts.split, cid, 'char_embeds.npy'), embed_char_res)
-    np.save(os.path.join(opts.glyph_output_dir, opts.split, cid, 'len.npy'), np.array([len(opts.input_text)]))
+    # np.save(os.path.join(opts.glyph_output_dir, opts.split, cid, 'len.npy'), np.array([len(opts.input_text)]))
     
     print('(3) lookup word embeddings ...')
     cur_idx = 0
-    seg_list = jieba.cut(opts.input_text)
-    word_str = "\t".join(seg_list)
-    words = word_str.split('\t')
+    words = opts.input_text.split(' ')
+    print(words)
     embed_word_res = np.zeros((opts.max_seqlen, opts.embed_dim))
     for word in words:
         if word_dict.get(word) is not None:
@@ -100,7 +142,7 @@ def gen_emebds(opts, cid):
                 embed_word_res[cur_idx] = embed_word
                 cur_idx += 1
     np.save(os.path.join(opts.glyph_output_dir, opts.split, cid, 'word_embeds.npy'), embed_word_res)
-    np.save(os.path.join(opts.glyph_output_dir, opts.split, cid, 'len.npy'), np.array([len(opts.input_text)]))
+    # np.save(os.path.join(opts.glyph_output_dir, opts.split, cid, 'len.npy'), np.array([len(opts.input_text)]))
 
 def gen_fake_gts(opts, cid):
     print('generate fake gts')
@@ -127,6 +169,9 @@ def gen_data(opts):
     cid = "words"
 
     if not os.path.exists(os.path.join(opts.glyph_output_dir, opts.split, cid)):
+        os.mkdir(os.path.join(opts.glyph_output_dir, opts.split, cid))
+    else:
+        shutil.rmtree(os.path.join(opts.glyph_output_dir, opts.split, cid))
         os.mkdir(os.path.join(opts.glyph_output_dir, opts.split, cid))
 
     gen_glyph_imgs(opts, cid)

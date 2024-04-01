@@ -7,7 +7,7 @@ def get_parser():
     parser.add_argument('--input_size', type=int, default=64,
                         help='the size of glyph image (character or word)')
     parser.add_argument('--output_size', type=int,
-                        default=512, help='the size of logo image')
+                        default=1024, help='the size of logo image')
     parser.add_argument('--max_seqlen', type=int, default=20,
                         help='the max length of charcters(words)')
     parser.add_argument('--in_channel', type=int, default=3,
