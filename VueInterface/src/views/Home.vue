@@ -166,6 +166,7 @@ async function runLogo(input: string = "") {
     },
     body: JSON.stringify(input),
   });
+  return response;
 }
 async function fetch_api_logo(path: string = "") {
   const response = await fetch(`http://127.0.0.1:8000/results/${path}`, {
@@ -279,20 +280,20 @@ const handleUpdate = async (value: Array<GLfloat>) => {
 
   const res = await change_attr(imageBattr.value, value);
   console.log(res);
-  if(res.status !== 200){
+  if (res.status !== 200) {
     loading.value = false;
     return; // Exit if the status is not 200
   }
 
   const res1 = await run_test();
-  if(res1.status !== 200){
+  if (res1.status !== 200) {
     loading.value = false;
     return; // Exit if the status is not 200
   }
   progress.value = 25;
 
   const res2 = await runLogo(wordInput.value);
-  if(res2.status !== 200){
+  if (res2.status !== 200) {
     loading.value = false;
     return; // Exit if the status is not 200
   }
@@ -300,14 +301,14 @@ const handleUpdate = async (value: Array<GLfloat>) => {
 
   images.value = [];
   const res3 = await getimages();
-  if(res3 !== true){
+  if (res3 !== true) {
     loading.value = false;
     return; // Exit if the status is not 200
   }
-  progress.value = 100
+  progress.value = 100;
 
   loading.value = false;
-};                           
+};
 </script>
 <style>
 .select {

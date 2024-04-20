@@ -83,6 +83,7 @@ def gen_glyph_imgs(opts, cid):
     # Paste each image into the combined image
     for idx, img in enumerate(images):
         tmp = img.resize((opts.glyph_size, opts.glyph_size))
+        tmp = ImageOps.invert(tmp)
         img_ele.paste(tmp, (idx * opts.glyph_size, 0))
 
     # Save the combined image
