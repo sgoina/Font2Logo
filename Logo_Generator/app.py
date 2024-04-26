@@ -11,7 +11,7 @@ parser = get_parser()
 opts = parser.parse_args()
 
 
-@app.route("/create", methods=['POST'])
+@app.route("/api/create", methods=['POST'])
 def use_model():
     word = request.json
     print(word)
@@ -29,13 +29,19 @@ def use_model():
     return jsonify({"message": "successful cycle"}), 200
 
 
-@app.route("/results/<filename>", methods=['GET'])
-def get_image(filename):
+@app.route("/api/results/<filename>", methods=['GET'])
+def get_result(filename):
     try:
         return send_from_directory("./outputs", filename, as_attachment=True)
     except FileNotFoundError:
         return jsonify({"error": "Image not found"}), 404
-
+    
+@app.route("/api/logo/<filename>", methods=['GET'])
+def get_logo(filename):
+    try:
+        return send_from_directory("./texture_style/YourDataSet/", filename, as_attachment=True)
+    except FileNotFoundError:
+        return jsonify({"error": "Image not found"}), 404
 
 if __name__ == "__main__":
     app.run(debug=True, port=8000)

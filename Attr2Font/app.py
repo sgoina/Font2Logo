@@ -43,7 +43,6 @@ def parse_attributes_file(file_path):
 @app.route('/api/image/B', methods=['GET'])
 def get_imageB():
     return jsonify({"data": get_last_prefix(ATTRIBUTES_DIR)})
-
 # this gets images from result folder
 
 
@@ -55,7 +54,7 @@ def get_image(filename):
         return jsonify({"error": "Image not found"}), 404
 
 
-@app.route("/", methods=["GET"])
+@app.route("/api/", methods=["GET"])
 def test_model():
     opts.phase = 'test'
     opts.test_epoch = 30
@@ -67,7 +66,13 @@ def test_model():
 def results(filename):
     return send_from_directory(RESULT_DIR, filename)
 
-
+@app.route("/api/attr/<filename>", methods=['GET'])
+def get_logo(filename):
+    try:
+        return send_from_directory("./experiments/att2font_en/results/", filename, as_attachment=True)
+    except FileNotFoundError:
+        return jsonify({"error": "Image not found"}), 404
+    
 @app.route('/api/attributes/<prefix>', methods=['GET'])
 def get_attributes(prefix):
 
@@ -92,6 +97,9 @@ def get_attributes(prefix):
 
 @app.route('/api/attributes/<prefix>', methods=['POST'])
 def update_attributes(prefix):
+    # attribute_values = request.json 
+    # print(attribute_values)
+    # print(prefix)
     if not prefix.endswith('/'):
         prefix += '/'
     # Read 37 attributes from the request body
