@@ -2,8 +2,8 @@
   <div class="card">
     <Splitter style="height: 75vh; margin-right: 10vh" class="mb-5">
       <SplitterPanel class="flex align-items-center justify-content-center"
-        ><photo :images="attrImages"
-      /></SplitterPanel>
+        ><photo :images="attrImages" />
+      </SplitterPanel>
       <SplitterPanel class="flex align-items-center justify-content-center">
         <photo :images="logoImages"
       /></SplitterPanel>

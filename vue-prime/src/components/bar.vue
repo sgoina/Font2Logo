@@ -1,19 +1,46 @@
 <template>
   <Toast />
   <div class="grid card flex justify-content-center">
-    <Sidebar v-model:visible="visible" header="Font2Logo">
+    <Sidebar v-model:visible="visibleLeft" header="Font2Logo" position="left">
       <p>Font2Logo is interesting</p>
-      <ProgressBar :value="50" />
+      <ProgressBar :value="submitProgress" style="margin-bottom: 10%" />
+      <div class="output-panel" ref="scrollPanel">
+        <pre>{{ output }}</pre>
+      </div>
+    </Sidebar>
+    <Sidebar v-model:visible="visibleTop" position="top" class="h-10rem md:h-30rem lg:h-50rem">
+      <FileUpload
+        mode="advanced"
+        name="texture[]"
+        url="http://127.0.0.1:8000/api/upload"
+        accept="image/*"
+        :maxFileSize="1000000"
+        @upload="onUpload"
+        ><template #empty>
+          <p>
+            Drag and drop files to here to upload and please name your texture files to
+            glyh-paint.png and glyh-sem.png .
+          </p>
+        </template></FileUpload
+      >
     </Sidebar>
     <div class="col">
       <Button
         style="height: 40px; width: 40px; font-size: 3rem"
         icon="pi  pi-cog"
-        @click="visible = true"
+        @click="visibleLeft = true"
       />
     </div>
     <div class="col">
       <Button @click="handleSubmit" style="width: 130px; height: 40px" label="Create Logo" />
+    </div>
+    <div class="col">
+      <Button
+        icon="pi pi-plus"
+        @click="visibleTop = true"
+        style="width: 190px; height: 41px"
+        label="Change Texture"
+      />
     </div>
     <div class="col">
       <InputText v-model="word" placeholder="word" />
@@ -24,29 +51,6 @@
     <div class="col">
       <Dropdown v-model="selectedFontB" :options="listOfFonts" placeholder="FontB" />
     </div>
-    <!-- <div class="col">
-      <FileUpload
-        mode="basic"
-        name="paint"
-        url="/api/upload"
-        accept="image/*"
-        :maxFileSize="1000000"
-        @upload="onUpload"
-      />
-    </div>
-    <div class="col">
-      <FileUpload
-        mode="basic"
-        name="sem"
-        url="/api/upload"
-        accept="image/*"
-        :maxFileSize="1000000"
-        @upload="onUpload"
-      />
-    </div> -->
-    <div class="col">
-      <!-- <Button @click="test"> test</Button> -->
-    </div>
     <div class="col">
       <ToggleButton @click="switchTheme" v-model="Theme" onLabel="Dark" offLabel="Light" />
     </div>
@@ -54,7 +58,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, onUnmounted, nextTick } from 'vue'
 import { usePrimeVue } from 'primevue/config'
 import { storeToRefs } from 'pinia'
 import { useNumbersStore } from '@/stores/attribute'
@@ -62,7 +66,8 @@ import { useSubmitStore } from '@/stores/useSubmitstore'
 import { fetch_api_att2font, post_api_att2font, post_api_Logo } from '@/utils/api'
 import { useToast } from 'primevue/usetoast'
 const PrimeVue = usePrimeVue()
-const visible = ref(false)
+const visibleLeft = ref(false)
+const visibleTop = ref(false)
 const Theme = ref(true)
 const currentTheme = ref('viva-dark')
 const word = ref('')
@@ -71,12 +76,54 @@ const listOfFonts = ref([])
 const selectedFontA = ref('')
 const selectedFontB = ref('')
 const toast = useToast()
+const submitProgress = ref(0)
+const output = ref('')
+const scrollPanel = ref<HTMLElement | null>(null)
+let intervalId: number | undefined = undefined
 
 //call the stored numbers from pinia
 const numbersStore = useNumbersStore()
 const { numbers } = storeToRefs(numbersStore)
 const submitStore = useSubmitStore()
 
+//outputfetching for logo generator
+const fetchOutput = () => {
+  // Clear previous output
+  // output.value = ''
+
+  // Start fetching output continuously
+  intervalId = setInterval(() => {
+    fetch('http://127.0.0.1:8000/api/output')
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok')
+        }
+        return response.json()
+      })
+      .then((data) => {
+        output.value += data.output
+        nextTick(() => {
+          const panel = scrollPanel.value
+          if (panel) {
+            panel.scrollTop = panel.scrollHeight
+          }
+        })
+      })
+      .catch((error) => {
+        console.error('Error:', error)
+        // Handle the error or display an error message
+      })
+  }, 500) // Fetch every 1 second (adjust as needed)
+}
+onUnmounted(() => {
+  // Clear the interval when the component is unmounted
+  clearInterval(intervalId)
+})
+//stop fetching
+const stopFetching = () => {
+  clearInterval(intervalId)
+  intervalId = undefined
+}
 //init for bar
 onMounted(aquireAttrName)
 onMounted(aquireFontList)
@@ -120,11 +167,9 @@ async function switchfont() {
   //update name for Attr
   await aquireAttrName()
 }
-async function test() {
-  if (word.value == '') console.log('hello')
-}
 const handleSubmit = async () => {
   try {
+    submitProgress.value = 0
     if (word.value == '') {
       toast.add({
         severity: 'error',
@@ -141,18 +186,21 @@ const handleSubmit = async () => {
       console.error('Error changing font:', error)
       throw error // Throw the error to stop further execution
     }
-
+    output.value += 'Format correct \n'
     // Change texture
     // Add code for changing texture here
 
     // Update attribute
+    submitProgress.value = 20
     try {
       await post_api_att2font(`/attributes/${AttrName.value}`, numbers.value)
     } catch (error) {
       console.error('Error updating attribute:', error)
       throw error // Throw the error to stop further execution
     }
-
+    submitProgress.value = 40
+    output.value += 'attribute updated  \n'
+    output.value += 'creating Font  \n'
     // Create font
     // Add code for creating font here
     try {
@@ -161,7 +209,11 @@ const handleSubmit = async () => {
       console.error('Error creating Font', error)
       throw error // Throw the error to stop further execution
     }
+    output.value += 'Font created  \n'
+    output.value += 'creating Logo  \n'
 
+    submitProgress.value = 80
+    fetchOutput()
     // Create logo
     // Add code for creating logo here
     try {
@@ -170,12 +222,16 @@ const handleSubmit = async () => {
       console.error('Error creating Logo', error)
       throw error // Throw the error to stop further execution
     }
+    stopFetching()
+    submitProgress.value = 100
+    output.value += 'Finished \n'
 
     // console.log(res_update_attribute.message)
 
     // Update the isSubmitted state after the submit action finishes
     submitStore.setSubmitted(true)
   } catch (error) {
+    stopFetching()
     console.error('Error in handleSubmit:', error)
     // Handle the general error or show an error message
     // You can also perform any necessary cleanup or error handling here
@@ -197,5 +253,20 @@ const switchTheme = () => {
   // console.log(nextTheme)
   currentTheme.value = nextTheme
 }
-const onUpload = () => {}
+const onUpload = () => {
+  toast.add({
+    severity: 'success',
+    summary: 'file uploaded',
+    detail: 'success',
+    life: 3000
+  })
+}
 </script>
+<style scoped>
+.output-panel {
+  height: 500px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  padding: 10px;
+}
+</style>

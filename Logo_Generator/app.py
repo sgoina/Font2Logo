@@ -4,11 +4,34 @@ import test
 from gen_data import gen_data
 from flask_cors import CORS
 from options import get_parser
+import sys 
+from io import StringIO
+
 
 app = Flask(__name__)
 CORS(app)
 parser = get_parser()
 opts = parser.parse_args()
+
+class RedirectStdout:
+    def __init__(self):
+        self.buffer = StringIO()
+
+    def write(self, output):
+        self.buffer.write(output)
+
+    def flush(self):
+        pass
+
+redirect_stdout = RedirectStdout()
+sys.stdout = redirect_stdout
+
+@app.route('/api/output', methods=['GET'])
+def get_output():
+    output = redirect_stdout.buffer.getvalue()
+    redirect_stdout.buffer.seek(0)
+    redirect_stdout.buffer.truncate(0)
+    return jsonify({'output': output})
 
 
 @app.route("/api/create", methods=['POST'])
@@ -42,6 +65,13 @@ def get_logo(filename):
         return send_from_directory("./texture_style/YourDataSet/", filename, as_attachment=True)
     except FileNotFoundError:
         return jsonify({"error": "Image not found"}), 404
-
+@app.route("/api/upload",methods=["POST"])
+def upload_texture():
+    uploaded_files = request.files.getlist('texture[]')
+    for file in uploaded_files:
+        if file:
+            # Save the file to a desired location
+            file.save(f'texture_style/{file.filename}')
+    return jsonify({'message': 'Files uploaded successfully'})
 if __name__ == "__main__":
     app.run(debug=True, port=8000)

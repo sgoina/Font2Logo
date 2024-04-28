@@ -34,6 +34,7 @@ import ToastService from 'primevue/toastservice'
 import Toast from 'primevue/toast'
 import FileUpload from 'primevue/fileupload'
 import Image from 'primevue/image'
+import Skeleton from 'primevue/skeleton'
 
 const app = createApp(App)
 
@@ -66,5 +67,6 @@ app.component('ToggleButton', ToggleButton)
 app.component('FileUpload', FileUpload)
 app.component('Toast', Toast)
 app.component('Image', Image)
+app.component('Skeleton', Skeleton)
 
 app.mount('#app')
