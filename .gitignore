@@ -151,7 +151,7 @@ pnpm-debug.log*
 *.sw?
 
 # CUSTOM
-data/explor_all/image/
+Attr2Font/data/explor_all/image
 experiments/*
 *.pth
 vgg19-dcbb9e9d.pth

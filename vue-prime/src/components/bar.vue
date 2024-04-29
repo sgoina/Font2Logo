@@ -46,7 +46,7 @@
       <InputText v-model="word" placeholder="word" />
     </div>
     <div class="col">
-      <Dropdown v-model="selectedFontA" :options="listOfFonts" placeholder="FontA" />
+      <Dropdown v-model="selectedFontA" :options="listOfFonts" placeholder="Font" />
     </div>
     <div class="col">
       <Dropdown v-model="selectedFontB" :options="listOfFonts" placeholder="FontB" />
@@ -54,9 +54,9 @@
     <div class="col">
       <ToggleButton @click="switchTheme" v-model="Theme" onLabel="Dark" offLabel="Light" />
     </div>
-    <div class="col">
+    <!-- <div class="col">
       <Button @click="test" label="test " />
-    </div>
+    </div> -->
   </div>
 </template>
 
@@ -88,9 +88,9 @@ let intervalId: number | undefined = undefined
 const numbersStore = useNumbersStore()
 const { numbers } = storeToRefs(numbersStore)
 const submitStore = useSubmitStore()
-async function test() {
-  await switchfont()
-}
+// async function test() {
+//   await switchfont()
+// }
 //outputfetching for logo generator
 const fetchOutput = () => {
   // Clear previous output
@@ -118,7 +118,7 @@ const fetchOutput = () => {
         console.error('Error:', error)
         // Handle the error or display an error message
       })
-  }, 500) // Fetch every 1 second (adjust as needed)
+  }, 100) // Fetch every 1 second (adjust as needed)
 }
 onUnmounted(() => {
   // Clear the interval when the component is unmounted

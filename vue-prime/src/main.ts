@@ -35,7 +35,8 @@ import Toast from 'primevue/toast'
 import FileUpload from 'primevue/fileupload'
 import Image from 'primevue/image'
 import Skeleton from 'primevue/skeleton'
-
+import Card from 'primevue/card'
+import Divider from 'primevue/divider'
 const app = createApp(App)
 
 app.use(createPinia())
@@ -68,5 +69,7 @@ app.component('FileUpload', FileUpload)
 app.component('Toast', Toast)
 app.component('Image', Image)
 app.component('Skeleton', Skeleton)
+app.component('Card', Card)
+app.component('Dvider', Divider)
 
 app.mount('#app')
