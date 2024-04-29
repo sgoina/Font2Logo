@@ -1,25 +1,36 @@
 import re
 import os
 
-
 def update_file_except_png_numbers(file_path, new_name1, new_name2):
     with open(file_path, 'r') as file:
         lines = file.readlines()
 
-    # Identify the last two unique prefixes
-    prefixes = set(line.split("/")[0] for line in lines if "/" in line)
-    last_two_prefixes = sorted(prefixes)[-2:]
+    # Identify the unique prefixes
+    prefixes = sorted(set(line.split("/")[0] for line in lines if "/" in line))
+
+    # Find the last two unique prefixes based on their position in the file
+    last_prefix = None
+    second_last_prefix = None
+    for line in reversed(lines):
+        if "/" in line:
+            prefix = line.split("/")[0]
+            if prefix != last_prefix:
+                if last_prefix is None:
+                    last_prefix = prefix
+                else:
+                    second_last_prefix = prefix
+                    break
 
     # Update the lines with the new names and change all numbers except png numbers to 1
     updated_lines = []
     for line in lines:
-        for old_prefix, new_prefix in zip(last_two_prefixes, [new_name1, new_name2]):
-            # Check if the line starts with the old prefix followed by '/'
-            if line.startswith(old_prefix + "/"):
-                line = line.replace(old_prefix, new_prefix, 1)
-                break
+        if line.startswith(last_prefix + "/"):
+            line = line.replace(last_prefix, new_name1, 1)
+        elif line.startswith(second_last_prefix + "/"):
+            line = line.replace(second_last_prefix, new_name2, 1)
+
         # Replace all numbers except png numbers with 1
-        line = re.sub(r'(?<!/)\b\d+\b', '1', line)
+        line = re.sub(r'(?<!/)\\b\\d+\\b', '1', line)
         updated_lines.append(line)
 
     # Write the updated content back to the file
@@ -27,7 +38,6 @@ def update_file_except_png_numbers(file_path, new_name1, new_name2):
         file.writelines(updated_lines)
 
     return "File updated successfully."
-
 
 def get_last_prefix(filename):
     try:

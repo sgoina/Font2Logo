@@ -54,6 +54,9 @@
     <div class="col">
       <ToggleButton @click="switchTheme" v-model="Theme" onLabel="Dark" offLabel="Light" />
     </div>
+    <div class="col">
+      <Button @click="test" label="test " />
+    </div>
   </div>
 </template>
 
@@ -85,7 +88,9 @@ let intervalId: number | undefined = undefined
 const numbersStore = useNumbersStore()
 const { numbers } = storeToRefs(numbersStore)
 const submitStore = useSubmitStore()
-
+async function test() {
+  await switchfont()
+}
 //outputfetching for logo generator
 const fetchOutput = () => {
   // Clear previous output

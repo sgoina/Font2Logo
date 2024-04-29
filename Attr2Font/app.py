@@ -134,7 +134,7 @@ def update_attributes(prefix):
 def change_image():
     files = request.json
     update_file_except_png_numbers(
-        ATTRIBUTES_DIR, files.get('imageB'), files.get('imageA'))
+        ATTRIBUTES_DIR, files.get('imageA'), files.get('imageB'))
     return jsonify({"message": "Image updated successfully"}), 200
 
 
