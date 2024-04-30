@@ -24,3 +24,13 @@ export const useFontStore = defineStore('font', {
     }
   }
 })
+export const useSubmitStoreFont = defineStore('genfont', {
+  state: () => ({
+    isSubmittedFont: false
+  }),
+  actions: {
+    setSubmitted(value: boolean) {
+      this.isSubmittedFont = value
+    }
+  }
+})

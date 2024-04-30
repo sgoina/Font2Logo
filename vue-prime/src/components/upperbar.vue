@@ -10,7 +10,7 @@ defineComponent({
 </script>
 <template>
   <div class="card">
-    <Toolbar style="border-radius: 3rem; padding: 1rem 1rem 1rem 1.5rem; width: 57%">
+    <Toolbar style="border-radius: 3rem; padding: 1rem 1rem 1rem 1.5rem; width: 70%">
       <template #start>
         <bar />
       </template>

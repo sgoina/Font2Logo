@@ -38,6 +38,8 @@ import Skeleton from 'primevue/skeleton'
 import Card from 'primevue/card'
 import Divider from 'primevue/divider'
 import VirtualScroller from 'primevue/virtualscroller'
+import Chip from 'primevue/chip'
+
 const app = createApp(App)
 
 app.use(createPinia())
@@ -73,5 +75,6 @@ app.component('Skeleton', Skeleton)
 app.component('Card', Card)
 app.component('Dvider', Divider)
 app.component('VirtualScroller', VirtualScroller)
+app.component('Chip', Chip)
 
 app.mount('#app')

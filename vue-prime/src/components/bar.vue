@@ -2,11 +2,11 @@
   <Toast />
   <div class="grid card flex justify-content-center">
     <Sidebar v-model:visible="visibleLeft" header="Font2Logo" position="left">
-      <p>Font2Logo is interesting</p>
       <ProgressBar :value="submitProgress" style="margin-bottom: 10%" />
       <div class="output-panel" ref="scrollPanel">
         <pre>{{ output }}</pre>
       </div>
+      <h4>made by rail_hail</h4>
     </Sidebar>
     <Sidebar v-model:visible="visibleTop" position="top" class="h-10rem md:h-30rem lg:h-50rem">
       <FileUpload
@@ -32,7 +32,10 @@
       />
     </div>
     <div class="col">
-      <Button @click="handleSubmit" style="width: 130px; height: 40px" label="Create Logo" />
+      <Button @click="handleSubmit" style="width: 130px; height: 40px" label="Create Font" />
+    </div>
+    <div class="col">
+      <Button @click="createLogo" style="width: 130px; height: 40px" label="Create Logo" />
     </div>
     <div class="col">
       <Button
@@ -65,7 +68,7 @@ import { watch, onMounted, ref, onUnmounted, nextTick } from 'vue'
 import { usePrimeVue } from 'primevue/config'
 import { storeToRefs } from 'pinia'
 import { useNumbersStore } from '@/stores/attribute'
-import { useSubmitStore, useFontStore } from '@/stores/useSubmitstore'
+import { useSubmitStoreFont, useSubmitStore, useFontStore } from '@/stores/useSubmitstore'
 import { fetch_api_att2font, post_api_att2font, post_api_Logo } from '@/utils/api'
 import { useToast } from 'primevue/usetoast'
 const PrimeVue = usePrimeVue()
@@ -89,6 +92,7 @@ const numbersStore = useNumbersStore()
 const { numbers } = storeToRefs(numbersStore)
 const submitStore = useSubmitStore()
 const fontStore = useFontStore()
+const submitStoreFont = useSubmitStoreFont()
 
 // async function test() {
 //   aquireFontList()
@@ -217,15 +221,7 @@ async function switchfont() {
 const handleSubmit = async () => {
   try {
     submitProgress.value = 0
-    if (word.value == '') {
-      toast.add({
-        severity: 'error',
-        summary: 'Error Message',
-        detail: 'you need to add a word input',
-        life: 3000
-      })
-      throw new Error('you need to add a word input')
-    }
+
     // Change font
     try {
       await switchfont()
@@ -249,7 +245,6 @@ const handleSubmit = async () => {
     output.value += 'attribute updated  \n'
     output.value += 'creating Font  \n'
     // Create font
-    // Add code for creating font here
     try {
       await fetch_api_att2font(`/`, false)
     } catch (error) {
@@ -257,6 +252,24 @@ const handleSubmit = async () => {
       throw error // Throw the error to stop further execution
     }
     output.value += 'Font created  \n'
+    submitStoreFont.setSubmitted(true)
+  } catch (error) {
+    console.error('Error in handleSubmit:', error)
+    // Handle the general error or show an error message
+    // You can also perform any necessary cleanup or error handling here
+  }
+}
+async function createLogo() {
+  try {
+    if (word.value == '') {
+      toast.add({
+        severity: 'error',
+        summary: 'Error Message',
+        detail: 'you need to add a word input',
+        life: 3000
+      })
+      throw new Error('you need to add a word input')
+    }
     output.value += 'creating Logo  \n'
 
     submitProgress.value = 80
@@ -311,7 +324,7 @@ const onUpload = () => {
 </script>
 <style scoped>
 .output-panel {
-  height: 500px;
+  height: 90%;
   overflow-y: auto;
   border: 1px solid #ccc;
   padding: 10px;

@@ -8,7 +8,7 @@
               v-for="(item, logoIndex) in Images.slice(index * 9, (index + 1) * 9)"
               :key="`logo-${index}-${logoIndex}`"
             >
-              <Image :src="item.itemImageSrc" :alt="item.alt" width="200" />
+              <Image :src="item.itemImageSrc" :alt="item.alt" width="100%" />
               <!-- <Divider
                 v-if="logoIndex < Images.slice(index * 9, (index + 1) * 9).length - 1"
                 layout="vertical"
