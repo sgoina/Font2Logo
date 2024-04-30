@@ -183,7 +183,6 @@ coverage
 # CUSTOM
 Attr2Font/data/explor_all/image/*
 Attr2Font/experiments/att2font_en/results/*
-Logo_Generator/texture_style/YourDataSet/*
 Logo_Generator/text_image/*
 experiments/*
 *.pth
