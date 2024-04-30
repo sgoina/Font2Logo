@@ -10,3 +10,17 @@ export const useSubmitStore = defineStore('submit', {
     }
   }
 })
+export const useFontStore = defineStore('font', {
+  state: () => ({
+    fontChanged: false,
+    a: false,
+    b: false
+  }),
+  actions: {
+    setChanged(value: boolean) {
+      this.fontChanged = value
+      this.a = false
+      this.b = false
+    }
+  }
+})

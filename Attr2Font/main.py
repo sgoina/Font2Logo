@@ -78,7 +78,8 @@ def test_one_epoch(opts, test_logfile, test_epoch,
                 i += 1
                 save_image(255-character, second_save_file,
                            nrow=1, normalize=True)
-            img_sample = torch.cat((test_img_A.data, test_fake_B.data, test_img_B.data), -2)
+            # img_sample = torch.cat((test_img_A.data, test_fake_B.data, test_img_B.data), -2)
+            img_sample =  test_fake_B.data
             save_file = os.path.join(results_dir, f"all_characters.png")
             save_image(img_sample, save_file, nrow=62, normalize=True)
 

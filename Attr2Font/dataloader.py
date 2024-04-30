@@ -59,11 +59,11 @@ class ImageAttr(data.Dataset):
         if mode == 'train':
             self.num_images = len(self.super_train_dataset) + \
                 len(self.unsuper_train_dataset)
-            print(len(self.super_train_dataset))
-            print(len(self.unsuper_train_dataset))
+            # print(len(self.super_train_dataset))
+            # print(len(self.unsuper_train_dataset))
         else:
             self.num_images = len(self.super_test_dataset)
-            print(len(self.super_test_dataset))
+            # print(len(self.super_test_dataset))
 
     def preprocess(self):
         """Preprocess the font attribute file."""
@@ -94,12 +94,12 @@ class ImageAttr(data.Dataset):
                     attr_value.append(eval(val) / 100.0)
 
             # print(filename, char_class, font_class)
-            print(f'i {i}')
-            print(f'train size {train_size}')
-            print(f'self.char_num {self.char_num} val_size {val_size}')
-            print(f'testdatasetlength {len(self.super_test_dataset)}')
-            print(f'usupertrain {len(self.unsuper_train_dataset)}')
-            print(f'supertrain {len(self.super_train_dataset)}')
+            # print(f'i {i}')
+            # print(f'train size {train_size}')
+            # print(f'self.char_num {self.char_num} val_size {val_size}')
+            # print(f'testdatasetlength {len(self.super_test_dataset)}')
+            # print(f'usupertrain {len(self.unsuper_train_dataset)}')
+            # print(f'supertrain {len(self.super_train_dataset)}')
             if i < train_size:
                 self.super_train_dataset.append(
                     [filename, char_class, font_class, attr_value])

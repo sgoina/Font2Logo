@@ -1,51 +1,87 @@
 <template>
   <Card style="height: 70%; width: 100%">
     <template #content>
-      <photot :attrImages="attrImages" :logoImages="logoImages" />
+      <Image :src="imageA.itemImageSrc" width="100%" />
+      <Image :src="imageB.itemImageSrc" width="100%" />
+      <Image :src="attrImages.itemImageSrc" width="100%" />
+      <photo :Images="logoImages" />
+      <photo :Images="results" />
     </template>
   </Card>
+  <Button @click="test" label="test"></Button>
 </template>
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useSubmitStore } from '@/stores/useSubmitstore'
-import { fetch_api_att2font, fetch_api_Logo } from '@/utils/api'
-// import photo from '@/components/photo.vue'
-import photot from '@/components/photot.vue'
+import { useSubmitStore, useFontStore } from '@/stores/useSubmitstore'
+import { fetch_api_att2font, fetch_api_Logo, post_api_att2font } from '@/utils/api'
+import photo from '@/components/photo.vue'
+// import photot from '@/components/photot.vue'
 
 const submitStore = useSubmitStore()
 const { isSubmitted } = storeToRefs(submitStore)
+const fontStore = useFontStore()
+const { fontChanged, a, b } = storeToRefs(fontStore)
 
-// const results = ref<{ itemImageSrc: string; alt: string }[]>([])
+const attrImages = ref<{ itemImageSrc: string; alt: string }>({ itemImageSrc: '', alt: '' })
+const imageA = ref<{ itemImageSrc: string; alt: string }>({ itemImageSrc: '', alt: '' })
+const imageB = ref<{ itemImageSrc: string; alt: string }>({ itemImageSrc: '', alt: '' })
 const logoImages = ref<{ itemImageSrc: string; alt: string }[]>([])
-const attrImages = ref<{ itemImageSrc: string; alt: string }[]>([])
+const results = ref<{ itemImageSrc: string; alt: string }[]>([])
 
 async function fetchPicture() {
   logoImages.value = []
-  attrImages.value = []
+  results.value = []
+
+  attrImages.value = { itemImageSrc: '', alt: '' }
 
   for (let i = 0; i < 9; i++) {
-    // const res = await fetch_api_Logo(`/results/output00${i}.png`, true)
-    // results.value.push({ itemImageSrc: res, alt: `Generated Image ${i}` })
+    const res = await fetch_api_Logo(`/results/output00${i}.png`, true)
+    results.value.push({ itemImageSrc: res, alt: `Generated Image ${i}` })
     const logo = await fetch_api_Logo(`/logo/00${i}.png`, true)
     logoImages.value.push({ itemImageSrc: logo, alt: `Generated Image ${i}` })
   }
-  for (let i = 0; i < 9; i++) {
-    const res = await fetch_api_Logo(`/results/output00${i}.png`, true)
-    logoImages.value.push({ itemImageSrc: res, alt: `Generated Image ${i}` })
-    // const logo = await fetch_api_Logo(`/logo/00${i}.png`, true)
-    // logoImages.value.push({ itemImageSrc: logo, alt: `Generated Image ${i}` })
-  }
-  console.log(logoImages.value)
-  const attr = await fetch_api_att2font(`/attr/all_characters.png`, true)
-  attrImages.value.push({ itemImageSrc: attr, alt: `Generated Image full` })
-}
 
+  // console.log(logoImages.value)
+  const attr = await fetch_api_att2font(`/attr/all_characters.png`, true)
+  attrImages.value = { itemImageSrc: attr, alt: `Generated Image full` }
+}
+function test() {
+  fetchPicture()
+}
 watch(isSubmitted, (value) => {
   if (value) {
     fetchPicture()
     submitStore.setSubmitted(false)
+  }
+})
+watch(fontChanged, async (value) => {
+  if (value) {
+    //check a and b and save img
+    if (a.value == true && b.value == false) {
+      await post_api_att2font(`/saveattr`, { switch: 'a' })
+    } else if (b.value == true && a.value == false) {
+      await post_api_att2font(`/saveattr`, { switch: 'b' })
+    } else if (b.value == true && a.value == true) {
+      await post_api_att2font(`/saveattr`, { switch: 'a' })
+      await post_api_att2font(`/saveattr`, { switch: 'b' })
+    }
+    //fetch a or b or both
+    if (a.value == true && b.value == false) {
+      const imgA = await fetch_api_att2font(`/attr/all_characters_a.png`, true)
+      imageA.value = { itemImageSrc: imgA, alt: `Generated Image full` }
+    } else if (b.value == true && a.value == false) {
+      const imgB = await fetch_api_att2font(`/attr/all_characters_b.png`, true)
+      imageB.value = { itemImageSrc: imgB, alt: `Generated Image full` }
+    } else if (b.value == true && a.value == true) {
+      const imgA = await fetch_api_att2font(`/attr/all_characters_a.png`, true)
+      const imgB = await fetch_api_att2font(`/attr/all_characters_b.png`, true)
+      imageA.value = { itemImageSrc: imgA, alt: `Generated Image full` }
+      imageB.value = { itemImageSrc: imgB, alt: `Generated Image full` }
+    }
+    //turn fontChanged to false
+    fontStore.setChanged(false)
   }
 })
 </script>

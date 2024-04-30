@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 # local imports
 import main
 from options import get_parser
-from utils import get_font_folder_names, update_file_except_png_numbers, get_last_prefix
+from utils import get_font_folder_names, update_file_except_png_numbers, get_last_prefix,create_attribute_picture
 
 # initialize the app
 load_dotenv()
@@ -19,7 +19,6 @@ CORS(app)
 parser = get_parser()
 opts = parser.parse_args()
 opts.unsuper_num = 968
-
 ATTRIBUTES = os.getenv('ATTRIBUTES_FILE')
 RESULT_DIR = "./experiments/att2font_en/results"
 ATTRIBUTES_DIR = "./data/explor_all/" + ATTRIBUTES
@@ -140,10 +139,13 @@ def change_image():
 
 @app.route('/api/list', methods=['GET'])
 def listarray():
-
     font_folder_names = get_font_folder_names(IMAGE_PATH)
     return jsonify({"data": font_folder_names})
-
+@app.route('/api/saveattr',methods=['POST'])
+def save_attr_pic():
+    files = request.json
+    create_attribute_picture(opts=opts,switch=files.get('switch'))
+    return jsonify({"message": "attr img saved"}), 200
 
 if __name__ == "__main__":
     app.run(debug=True, port=5000)

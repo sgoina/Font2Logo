@@ -46,7 +46,7 @@
       <InputText v-model="word" placeholder="word" />
     </div>
     <div class="col">
-      <Dropdown v-model="selectedFontA" :options="listOfFonts" placeholder="Font" />
+      <Dropdown v-model="selectedFontA" :options="listOfFonts" placeholder="FontA" />
     </div>
     <div class="col">
       <Dropdown v-model="selectedFontB" :options="listOfFonts" placeholder="FontB" />
@@ -61,11 +61,11 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, onUnmounted, nextTick } from 'vue'
+import { watch, onMounted, ref, onUnmounted, nextTick } from 'vue'
 import { usePrimeVue } from 'primevue/config'
 import { storeToRefs } from 'pinia'
 import { useNumbersStore } from '@/stores/attribute'
-import { useSubmitStore } from '@/stores/useSubmitstore'
+import { useSubmitStore, useFontStore } from '@/stores/useSubmitstore'
 import { fetch_api_att2font, post_api_att2font, post_api_Logo } from '@/utils/api'
 import { useToast } from 'primevue/usetoast'
 const PrimeVue = usePrimeVue()
@@ -88,9 +88,51 @@ let intervalId: number | undefined = undefined
 const numbersStore = useNumbersStore()
 const { numbers } = storeToRefs(numbersStore)
 const submitStore = useSubmitStore()
+const fontStore = useFontStore()
+
 // async function test() {
-//   await switchfont()
+//   aquireFontList()
 // }
+//we watch font a and font b and if one is changed we update the server side attributes and tell the store to fetch it
+watch([selectedFontA, selectedFontB], async (newValues, oldValues) => {
+  if (!(selectedFontA.value == selectedFontB.value)) {
+    if (selectedFontA.value || selectedFontB.value) {
+      if (selectedFontA.value == '') {
+        //tell the server to change
+        await post_api_att2font('/image', {
+          imageA: 'Ubuntu-Bold',
+          imageB: selectedFontB.value
+        })
+        //change pinia store
+        fontStore.b = true
+        fontStore.fontChanged = true
+      } else if (selectedFontB.value == '') {
+        await post_api_att2font('/image', {
+          imageA: selectedFontA.value,
+          imageB: 'Ubuntu-Bold'
+        })
+        fontStore.a = true
+        fontStore.fontChanged = true
+      } else {
+        await post_api_att2font('/image', {
+          imageA: selectedFontA.value,
+          imageB: selectedFontB.value
+        })
+        fontStore.a = true
+        fontStore.b = true
+        fontStore.fontChanged = true
+      }
+    }
+    aquireFontList()
+  } else {
+    toast.add({
+      severity: 'error',
+      summary: 'Error Message',
+      detail: 'both fonts cant be the same',
+      life: 3000
+    })
+  }
+})
 //outputfetching for logo generator
 const fetchOutput = () => {
   // Clear previous output

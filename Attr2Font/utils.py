@@ -1,5 +1,7 @@
 import re
 import os
+from dataloader import get_loader
+from torchvision.utils import save_image
 
 def update_file_except_png_numbers(file_path, new_name1, new_name2):
     with open(file_path, 'r') as file:
@@ -65,5 +67,32 @@ def get_font_folder_names(directory_path):
         # Check if the item is a directory
         if os.path.isdir(item_path):
             font_folders.append(item)
-
+    font_folders.remove('Ubuntu-Bold')
+    
     return font_folders
+def create_attribute_picture(opts,switch):
+    log_dir = os.path.join("experiments", opts.experiment_name)
+    results_dir = os.path.join(log_dir, "results")
+    image_dir = os.path.join(opts.data_root, opts.dataset_name, "image")
+    attribute_path = os.path.join(
+        opts.data_root, opts.dataset_name, "attributes2.txt")
+    test_dataloader = get_loader(image_dir, attribute_path,
+                                 dataset_name=opts.dataset_name,
+                                 image_size=opts.img_size,
+                                 n_style=opts.n_style, batch_size=62,
+                                 mode='test', binary=False)
+    for test_idx, test_batch in enumerate(test_dataloader):
+        test_img_A = test_batch['img_A']
+        test_img_B = test_batch['img_B']
+        #generates current font A picture for you to use 
+        if switch == 'a':
+            img_sample = test_img_A.data
+            save_file = os.path.join(results_dir, f"all_characters_a.png")
+            save_image(img_sample,save_file , nrow=62, normalize=True)
+        #generates current font B picture for you to use     
+        elif switch == 'b':
+            img_sample = test_img_B.data
+            save_file = os.path.join(results_dir, f"all_characters_b.png")
+            save_image(img_sample,save_file, nrow=62, normalize=True)
+    
+  
