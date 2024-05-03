@@ -71,6 +71,10 @@ def get_parser():
                         default=6.0, help='Contextual loss lambda')
     parser.add_argument("--lambda_attr", type=float, default=20.0,
                         help='discriminator predict attribute loss lambda')
+    
+
+    parser.add_argument("--font_name", type=str, default="Acme-Regular",
+                        help='the name of the source font in font2logo')
 
     # Other Modules
     return parser

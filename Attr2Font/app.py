@@ -56,7 +56,7 @@ def get_image(filename):
 @app.route("/api/", methods=["GET"])
 def test_model():
     opts.phase = 'test'
-    opts.test_epoch = 30
+    opts.test_epoch = 140
     main.test(opts)
     return jsonify({"message": "successful cycle"}), 200
 

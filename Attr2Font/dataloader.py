@@ -2,6 +2,7 @@ import os
 import random
 
 import torch
+from torch import nn
 import torchvision.transforms as T
 from PIL import Image
 from torch.utils import data
@@ -22,7 +23,7 @@ class ImageAttr(data.Dataset):
 
     def __init__(self, image_dir, attr_path, transform, mode,
                  binary=False, n_style=4,
-                 char_num=62, unsuper_num=968, train_num=1, val_num=1):
+                 char_num=62, unsuper_num=968, train_num=120, val_num=28):
         """Initialize and preprocess the ImageAttr dataset."""
         self.image_dir = image_dir
         self.attr_path = attr_path
@@ -63,7 +64,7 @@ class ImageAttr(data.Dataset):
             # print(len(self.unsuper_train_dataset))
         else:
             self.num_images = len(self.super_test_dataset)
-            # print(len(self.super_test_dataset))
+            print(len(self.super_test_dataset))
 
     def preprocess(self):
         """Preprocess the font attribute file."""
@@ -116,74 +117,15 @@ class ImageAttr(data.Dataset):
         """Return one image and its corresponding attribute label."""
         # dataset = self.super_train_dataset if self.mode == 'train' else self.super_test_dataset
 
-        if self.mode == 'train':
-            if index < len(self.super_train_dataset):
-                filename_A, charclass_A, fontclass_A, attr_A = self.super_train_dataset[index]
-                label_A = 1.0
-                font_embed_A = self.unsupervised_font_num  # dummy id 968
-                # B is supervised or unsupervised
-                sample_p = random.random()
-                if sample_p < 0.5:
-                    # Unsupervise
-                    index_B = index % self.char_num + self.char_num * \
-                        random.randint(0, self.unsupervised_font_num - 1)
-                    filename_B, charclass_B, fontclass_B, attr_B = self.unsuper_train_dataset[
-                        index_B]
-                    label_B = 0.0
-                    font_embed_B = fontclass_B - self.train_font_num - \
-                        self.val_font_num  # convert to [0, 967]
-                else:
-                    # Supervise
-                    # get B from supervise train !!
-                    index_B = index % self.char_num + self.char_num * \
-                        random.randint(0, self.train_font_num - 1)
-                    filename_B, charclass_B, fontclass_B, attr_B = self.super_train_dataset[
-                        index_B]
-                    label_B = 1.0
-                    font_embed_B = self.unsupervised_font_num  # dummy id 968
-
-            else:
-                # get A from unsupervise train !!
-                index = index - len(self.super_train_dataset)
-                filename_A, charclass_A, fontclass_A, attr_A = self.unsuper_train_dataset[index]
-                label_A = 0.0
-                font_embed_A = fontclass_A - self.train_font_num - self.val_font_num
-                # B is supervised or unsupervised
-                sample_p = random.random()
-                if sample_p < 0.5:
-                    # Unsupervise
-                    index_B = index % self.char_num + self.char_num * random.randint(0, self.unsupervised_font_num - 1)  # noqa
-                    filename_B, charclass_B, fontclass_B, attr_B = self.unsuper_train_dataset[
-                        index_B]
-                    label_B = 0.0
-                    font_embed_B = fontclass_B - self.train_font_num - \
-                        self.val_font_num  # convert to [0, 967]
-                else:
-                    # Supervise
-                    # get B from supervise train !!
-                    index_B = index % self.char_num + self.char_num * \
-                        random.randint(0, self.train_font_num - 1)
-                    filename_B, charclass_B, fontclass_B, attr_B = self.super_train_dataset[
-                        index_B]
-                    label_B = 1.0
-                    font_embed_B = self.unsupervised_font_num  # dummy id 968
-
-        else:
-            # load the random one from unsupervise data as the reference aka A
-            # unsuper to super
-            font_index_super = index // self.char_num + self.train_font_num
-            font_index_unsuper = self.test_super_unsuper[font_index_super]
-            char_index_unsuper = index % self.char_num + self.char_num * font_index_unsuper
-            filename_A, charclass_A, fontclass_A, attr_A = self.unsuper_train_dataset[
-                char_index_unsuper]
-            label_A = 0.0
-            font_embed_A = fontclass_A - self.train_font_num - \
-                self.val_font_num  # convert to [0, 967]
-
-            filename_B, charclass_B, fontclass_B, attr_B = self.super_test_dataset[index]
-            label_B = 1.0
-            font_embed_B = self.unsupervised_font_num  # dummy id 968
-
+        # load the random one from unsupervise data as the reference aka A
+        # unsuper to super
+        font_index_super = index // self.char_num + self.train_font_num
+        font_index_unsuper = self.test_super_unsuper[font_index_super]
+        char_index_unsuper = index % self.char_num + self.char_num * font_index_unsuper
+        filename_A, charclass_A, fontclass_A, attr_A = self.unsuper_train_dataset[
+            char_index_unsuper]
+        label_A = 0.0
+        font_embed_A = fontclass_A - self.train_font_num - self.val_font_num  # convert to [0, 967]
         # Get style samples
         random.shuffle(self.chars)
         style_chars = self.chars[:self.n_style]
@@ -197,42 +139,20 @@ class ImageAttr(data.Dataset):
                 # print(rreplace(filename_A, str(charclass_A).zfill(2), str(char), 1))
                 # print(f'this is {filename_A}')
 
-        random.shuffle(self.chars)
-        style_chars = self.chars[:self.n_style]
-        styles_B = []
-        if self.n_style == 1:
-            styles_B.append(filename_B)
-        else:
-            for char in style_chars:
-                styles_B.append(
-                    rreplace(filename_B, str(charclass_B).zfill(2), str(char).zfill(2), 1))
-
         image_A = Image.open(os.path.join(
             self.image_dir, filename_A)).convert('RGB')
-        image_B = Image.open(os.path.join(
-            self.image_dir, filename_B)).convert('RGB')
         # Open and transform style images
         style_imgs_A = []
         for style_A in styles_A:
             style_imgs_A.append(self.transform(Image.open(
                 os.path.join(self.image_dir, style_A)).convert('RGB')))
         style_imgs_A = torch.cat(style_imgs_A)
-        style_imgs_B = []
-        for style_B in styles_B:
-            style_imgs_B.append(self.transform(Image.open(
-                os.path.join(self.image_dir, style_B)).convert('RGB')))
-        style_imgs_B = torch.cat(style_imgs_B)
 
         return {"img_A": self.transform(image_A), "charclass_A": torch.LongTensor([charclass_A]),
                 "fontclass_A": torch.LongTensor([fontclass_A]), "attr_A": torch.FloatTensor(attr_A),
                 "styles_A": style_imgs_A,
                 "fontembed_A": torch.LongTensor([font_embed_A]),
-                "label_A": torch.FloatTensor([label_A]),
-                "img_B": self.transform(image_B), "charclass_B": torch.LongTensor([charclass_B]),
-                "fontclass_B": torch.LongTensor([fontclass_B]), "attr_B": torch.FloatTensor(attr_B),
-                "styles_B": style_imgs_B,
-                "fontembed_B": torch.LongTensor([font_embed_B]),
-                "label_B": torch.FloatTensor([label_B])}
+                "label_A": torch.FloatTensor([label_A])}
 
     def __len__(self):
         """Return the number of images."""
@@ -253,8 +173,8 @@ def get_loader(image_dir, attr_path, image_size=256,
     if dataset_name == 'explor_all':
         dataset = ImageAttr(image_dir, attr_path, transform,
                             mode, binary, n_style,
-                            char_num=62, unsuper_num=1,
-                            train_num=1, val_num=1)
+                            char_num=62, unsuper_num=968,
+                            train_num=120, val_num=28)
     data_loader = data.DataLoader(dataset=dataset,
                                   drop_last=True,
                                   batch_size=batch_size,
@@ -262,3 +182,81 @@ def get_loader(image_dir, attr_path, image_size=256,
                                   num_workers=num_workers)
 
     return data_loader
+
+
+def get_test_data(image_dir, attr_path, font_name, image_size=256, experiment_name='explor_all', n_style=4,
+                  char_num=62, unsuper_num=968, super_num = 148):
+    transform = []
+    transform.append(T.Resize(image_size))
+    transform.append(T.ToTensor())
+    transform.append(T.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)))
+    transform = T.Compose(transform)
+
+    with open(attr_path, 'r') as file:
+        for line_num, line in enumerate(file, start=1):
+            if font_name in line:
+                print(line_num)
+                break
+    line_num -= 1
+    font_num = line_num // char_num
+    img_folder_path = os.path.join(image_dir, font_name)
+    img = torch.empty(char_num, 3, image_size, image_size)
+    index = 0
+    for filename in os.listdir(img_folder_path):
+        if filename.endswith('.png'):
+            image = Image.open(os.path.join(img_folder_path, filename)).convert('RGB')
+            img[index] = transform(image)
+            index += 1
+
+    source_style = torch.empty(char_num, 3 * n_style, image_size, image_size)
+    index = 0
+    for filename in os.listdir(img_folder_path):
+        chars = [c for c in range(0, char_num)]
+        random.shuffle(chars)
+        styles = []
+        style_chars = chars[:n_style]
+        charclass = int(filename.split('.')[0])
+        if n_style == 1:
+                styles.append(filename)
+        else:
+            for char in style_chars:
+                styles.append(
+                    rreplace(filename, str(charclass).zfill(2), str(char).zfill(2), 1))
+
+        style_imgs = []
+        for style in styles:
+            style_imgs.append(transform(Image.open(os.path.join(image_dir, font_name, style)).convert('RGB')))
+        style_imgs = torch.cat(style_imgs)
+        source_style[index] = style_imgs
+        index += 1
+    #User chooses a super_font
+    if (font_num < super_num):
+        print('super')
+    #User chooses a unsuper_font
+    else:
+        print('unsuper')
+
+    return font_num, img, source_style
+
+def get_font_attr(attr_path, font_name, attr_unsuper_tolearn, char_num = 62):
+    with open(attr_path, 'r') as file:
+        for line_num, line in enumerate(file, start=1):
+            if font_name in line:
+                break
+    line_num -= 1
+    font_num = line_num // char_num
+    print(font_num)
+    if (line_num // char_num < 148): 
+        values = line.strip().split()[1:]
+        float_values = [float(value) for value in values]
+        attr_values = torch.LongTensor(float_values)
+        attr_values = attr_values.repeat(62, 1)
+        attr_values = attr_values.unsqueeze(1)
+    else:
+        font_num -= 148
+        font_embed = torch.LongTensor([font_num])
+        font_embed = font_embed.repeat(62, 1)
+        attr_values = attr_unsuper_tolearn(font_embed)
+        attr_values = attr_values.unsqueeze(1)
+        print(attr_values.shape)
+    return attr_values
