@@ -32,8 +32,6 @@ def test_one_epoch(opts, test_epoch, attribute_path,
     attribute_embed.load_state_dict(torch.load(attribute_embed_file))
     attr_unsuper_tolearn.load_state_dict(torch.load(attr_unsuper_file))
 
-    get_font_attr(attribute_path, opts.font_name, attr_unsuper_tolearn)
-
     with torch.no_grad():
         test_attrid = torch.tensor(
             [i for i in range(opts.attr_channel)]).to(device)
@@ -46,10 +44,9 @@ def test_one_epoch(opts, test_epoch, attribute_path,
 
         #來源字體的attribute
         test_attr_A_intensity = get_font_attr(attribute_path, opts.font_name, attr_unsuper_tolearn).to(device)
-        test_attr_A_intensity = test_attr_A_intensity.view(test_attr_A_intensity.size(0), test_attr_A_intensity.size(2))  # noqa
-        test_attr_A_intensity = torch.sigmoid(3*test_attr_A_intensity)  # convert to [0, 1]
 
         test_attr_B_intensity = new_attribute.to(device)
+        print(test_attr_B_intensity.shape)
 
         test_attr_raw_A = attribute_embed(test_attrid)
         test_attr_raw_B = attribute_embed(test_attrid)

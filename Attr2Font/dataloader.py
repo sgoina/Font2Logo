@@ -6,6 +6,7 @@ from torch import nn
 import torchvision.transforms as T
 from PIL import Image
 from torch.utils import data
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 def rreplace(s, old, new, occurrence):
@@ -251,12 +252,14 @@ def get_font_attr(attr_path, font_name, attr_unsuper_tolearn, char_num = 62):
         float_values = [float(value) for value in values]
         attr_values = torch.LongTensor(float_values)
         attr_values = attr_values.repeat(62, 1)
-        attr_values = attr_values.unsqueeze(1)
+        print(attr_values.shape)
     else:
         font_num -= 148
         font_embed = torch.LongTensor([font_num])
         font_embed = font_embed.repeat(62, 1)
-        attr_values = attr_unsuper_tolearn(font_embed)
-        attr_values = attr_values.unsqueeze(1)
+        attr_values = attr_unsuper_tolearn(font_embed).to(device)
+        print(attr_values.shape)
+        attr_values = attr_values.view(attr_values.size(0), attr_values.size(2))  # noqa
+        attr_values = torch.sigmoid(3*attr_values)  # convert to [0, 1]
         print(attr_values.shape)
     return attr_values
