@@ -1,0 +1,50 @@
+<template>
+  <div class="card">
+    <Stepper orientation="vertical">
+      <StepperPanel header="Header I">
+        <template #content="{ nextCallback }">
+          <div class="flex flex-column h-12rem">
+            <div
+              class="border-2 border-dashed surface-border border-round surface-ground flex-auto flex justify-content-center align-items-center font-medium"
+            >
+              Content I
+            </div>
+          </div>
+          <div class="flex py-4">
+            <Button label="Next" @click="nextCallback" />
+          </div>
+        </template>
+      </StepperPanel>
+      <StepperPanel header="Header II">
+        <template #content="{ prevCallback, nextCallback }">
+          <div class="flex flex-column h-12rem">
+            <div
+              class="border-2 border-dashed surface-border border-round surface-ground flex-auto flex justify-content-center align-items-center font-medium"
+            >
+              Content II
+            </div>
+          </div>
+          <div class="flex py-4 gap-2">
+            <Button label="Back" severity="secondary" @click="prevCallback" />
+            <Button label="Next" @click="nextCallback" />
+          </div>
+        </template>
+      </StepperPanel>
+      <StepperPanel header="Header III">
+        <template #content="{ prevCallback }">
+          <div class="flex flex-column h-12rem">
+            <div
+              class="border-2 border-dashed surface-border border-round surface-ground flex-auto flex justify-content-center align-items-center font-medium"
+            >
+              Content III
+            </div>
+          </div>
+          <div class="flex py-4">
+            <Button label="Back" severity="secondary" @click="prevCallback" />
+          </div>
+        </template>
+      </StepperPanel>
+    </Stepper>
+  </div>
+</template>
+<script setup lang="ts"></script>
