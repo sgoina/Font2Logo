@@ -249,8 +249,8 @@ def get_font_attr(attr_path, font_name, attr_unsuper_tolearn, char_num = 62):
     print(font_num)
     if (line_num // char_num < 148): 
         values = line.strip().split()[1:]
-        float_values = [float(value) for value in values]
-        attr_values = torch.LongTensor(float_values)
+        float_values = [eval(value)/100.0 for value in values]
+        attr_values = torch.FloatTensor(float_values)
         attr_values = attr_values.repeat(62, 1)
         print(attr_values.shape)
     else:
@@ -262,4 +262,5 @@ def get_font_attr(attr_path, font_name, attr_unsuper_tolearn, char_num = 62):
         attr_values = attr_values.view(attr_values.size(0), attr_values.size(2))  # noqa
         attr_values = torch.sigmoid(3*attr_values)  # convert to [0, 1]
         print(attr_values.shape)
+    print(attr_values)
     return attr_values

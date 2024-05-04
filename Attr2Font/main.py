@@ -6,7 +6,7 @@ import torch
 from torch import nn
 from torchvision.utils import save_image
 
-from dataloader import get_loader, get_test_data, get_font_attr
+from dataloader import get_test_data, get_font_attr
 from model import CXLoss, DiscriminatorWithClassifier, GeneratorStyle
 from options import get_parser
 from vgg_cx import VGG19_CX
