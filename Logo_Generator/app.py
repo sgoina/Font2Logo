@@ -1,6 +1,6 @@
 import os
 from flask import Flask,  request, jsonify, send_from_directory
-import test
+from test import test
 from gen_data import gen_data
 from flask_cors import CORS
 from options import get_parser
@@ -48,7 +48,7 @@ def use_model():
     opts.experiment_name = opts.experiment_name
     gen_data(opts)
     print(f"Testing on experiment {opts.experiment_name}...")
-    test.test(opts)
+    test(opts)
     return jsonify({"message": "successful cycle"}), 200
 
 
