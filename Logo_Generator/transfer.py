@@ -163,6 +163,10 @@ def transfer(args):
         torch.cuda.synchronize() 
     start_time = time.time()
 
+
+    args.coarse_alpha = 0
+    args.enhance_alpha = 0.4
+    args.semantic = 'concat_ds'
     # Global view structure alignment stage
     print("Processing level 5"); content = VSTR(TR.e5, TR.d5, content, style, content_sem, style_sem, args.coarse_psize, args.coarse_alpha, args.semantic)
 
